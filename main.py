@@ -2,7 +2,16 @@
 from pdfquery import PDFQuery
 # library  transform text to speech
 from gtts import gTTS
+# library that handles calls to the operating system
 import os
+import tkinter as tk
+from tkinter import filedialog
+
+# open a window for the user to select a file
+root = tk.Tk()
+root.withdraw()
+full_file_name = filedialog.askopenfilename(parent=root, initialdir="/", title="Select file to convert", filetypes=[("pdf files", "*.pdf")] )
+# print(full_file_name)
 
 # Language of the text to convert
 LANGUAGE = 'en'
@@ -14,20 +23,23 @@ LANGUAGE = 'en'
 # https://cloud.google.com/text-to-speech/docs/basics
 # https://aws.amazon.com/polly/
 
-pdf = PDFQuery('test_data/example_1.pdf')
+pdf = PDFQuery(full_file_name)
 pdf.load()
 # convert to XML in order to be able to explore the CSS Selectors in use
-pdf.tree.write('test_data/example_1.txt', pretty_print = True)
+pdf.tree.write(f'test_data/output.txt', pretty_print = True)
 
-text_parts = pdf.pq('LTTextLineHorizontal:in_bbox("72.024, 756.7, 318.865, 767.74")').text()
+# to get the text at a given location
+# text_parts = pdf.pq('LTTextLineHorizontal:in_bbox("72.024, 756.7, 318.865, 767.74")').text()
 
-print(text_parts)
-# for text_element in text_parts:
-#     print (text_element)
+text_parts = pdf.pq('LTTextLineHorizontal').text()
 
+# print(text_parts)
 
 voice_data = gTTS(text=text_parts, lang=LANGUAGE, slow=False)
-voice_data.save("test_data\wexample_1.mp3")
+voice_data.save(f'test_data/output.mp3')
 
-# Playing the converted file
-os.system("test_data\wexample_1.mp3")
+# Playing the converted file if the user requests ity
+listen = input("Do you want to listen to the result now? (y/n):")
+listen=listen.lower()[0]
+if listen == 'y':
+    os.system(f'test_data\\output.mp3')
