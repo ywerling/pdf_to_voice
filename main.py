@@ -23,23 +23,28 @@ LANGUAGE = 'en'
 # https://cloud.google.com/text-to-speech/docs/basics
 # https://aws.amazon.com/polly/
 
-pdf = PDFQuery(full_file_name)
-pdf.load()
-# convert to XML in order to be able to explore the CSS Selectors in use
-pdf.tree.write(f'test_data/output.txt', pretty_print = True)
+try:
+    pdf = PDFQuery(full_file_name)
+except FileNotFoundError:
+    print(f"File not found: {full_file_name}")
+else:
+    pdf.load()
+    # convert to XML in order to be able to explore the CSS Selectors in use
+    # pdf.tree.write(f'test_data/output.txt', pretty_print = True)
 
-# to get the text at a given location
-# text_parts = pdf.pq('LTTextLineHorizontal:in_bbox("72.024, 756.7, 318.865, 767.74")').text()
+    # to get the text at a given location
+    # text_parts = pdf.pq('LTTextLineHorizontal:in_bbox("72.024, 756.7, 318.865, 767.74")').text()
 
-text_parts = pdf.pq('LTTextLineHorizontal').text()
+    # text elements are within a LTTextLineHorizontal markup
+    text_result = pdf.pq('LTTextLineHorizontal').text()
 
-# print(text_parts)
+    # print(text_result)
 
-voice_data = gTTS(text=text_parts, lang=LANGUAGE, slow=False)
-voice_data.save(f'test_data/output.mp3')
+    voice_data = gTTS(text=text_result, lang=LANGUAGE, slow=False)
+    voice_data.save(f'test_data/output.mp3')
 
-# Playing the converted file if the user requests ity
-listen = input("Do you want to listen to the result now? (y/n):")
-listen=listen.lower()[0]
-if listen == 'y':
-    os.system(f'test_data\\output.mp3')
+    # Playing the converted file if the user requests ity
+    listen = input("Do you want to listen to the result now? (y/n):")
+    listen = listen.lower()[0]
+    if listen == 'y':
+        os.system(f'test_data\\output.mp3')
